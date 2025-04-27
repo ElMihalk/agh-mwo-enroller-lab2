@@ -45,4 +45,11 @@ public class ParticipantService {
         transaction.commit();
     }
 
+    public Collection<Participant> getAll(String key, String sortOrder) {
+        key = "\'%" + key + "%\'";
+        String hql = "FROM Participant WHERE login LIKE " + key + " ORDER BY login"  + " " + sortOrder;
+        System.out.println(hql);
+        Query query = connector.getSession().createQuery(hql);
+        return query.list();
+    }
 }
