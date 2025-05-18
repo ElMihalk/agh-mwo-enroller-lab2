@@ -17,6 +17,8 @@ public class MeetingRestController {
 
     @Autowired
     MeetingService meetingService;
+
+    @Autowired
     ParticipantService participantService;
 
     @RequestMapping(value = "", method = RequestMethod.GET)
@@ -66,28 +68,40 @@ public class MeetingRestController {
         return new ResponseEntity<Meeting>(meeting, HttpStatus.CREATED);
     }
 
-/// ////////////////////////////////
-    @RequestMapping(value = "/{id}/partcipants", method = RequestMethod.POST)
-    public ResponseEntity<?> addParticipant(@PathVariable("id") long id, @RequestBody String participantLogin) {
+    @RequestMapping(value = "/{id}/participants", method = RequestMethod.POST)
+    public ResponseEntity<?> addParticipantToMeeting(@PathVariable("id") long id, @RequestBody String participantLogin) {
         Meeting meeting = meetingService.findById(id);
+        Participant participant = participantService.findByLogin(participantLogin);
         if (meeting == null) {
             return new ResponseEntity(HttpStatus.NOT_FOUND);
         }
-        meeting.addParticipant(participantService.findByLogin(participantLogin));
-        meetingService.add(meeting);
+        System.out.println(participantService);
+        meeting.addParticipant(participant);
+        meetingService.update(meeting);
         return new ResponseEntity<Meeting>(meeting, HttpStatus.CREATED);
     }
 
-    @RequestMapping(value = "/{id}/partcipants", method = RequestMethod.GET)
-    public ResponseEntity<?> getParticipants(@PathVariable("id") long id) {
+    @RequestMapping(value = "/{id}/participants", method = RequestMethod.GET)
+    public ResponseEntity<?> getParticipantsOfMeeting(@PathVariable("id") long id) {
         Meeting meeting = meetingService.findById(id);
         if (meeting == null) {
             return new ResponseEntity(HttpStatus.NOT_FOUND);
         }
         Collection<Participant> participants = meeting.getParticipants();
-        return new ResponseEntity<Participant>((Participant) participants, HttpStatus.OK);
+        return new ResponseEntity<Collection<Participant>>(participants, HttpStatus.OK);
     }
-/// //////////////////////////////////////
+
+    @RequestMapping(value = "/{id}/participants/{login}", method = RequestMethod.DELETE)
+    public ResponseEntity<?> deleteParticipantFromMeeting(@PathVariable("id") long id, @PathVariable("login") String login) {
+        Meeting meeting = meetingService.findById(id);
+        Participant participantToDelete = participantService.findByLogin(login);
+        if (meeting == null) {
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
+        meeting.removeParticipant(participantToDelete);
+        meetingService.update(meeting);
+        return new ResponseEntity<Participant>(HttpStatus.OK);
+    }
 
 
 }
