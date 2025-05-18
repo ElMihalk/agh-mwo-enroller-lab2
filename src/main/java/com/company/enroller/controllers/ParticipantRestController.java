@@ -5,6 +5,7 @@ import java.util.Collection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import com.company.enroller.model.Participant;
@@ -16,6 +17,9 @@ public class ParticipantRestController {
 
 	@Autowired
 	ParticipantService participantService;
+
+	@Autowired
+	PasswordEncoder passwordEncoder;
 
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
 	public ResponseEntity<?> getParticipant(@PathVariable("id") String login) {
@@ -33,6 +37,8 @@ public class ParticipantRestController {
 					"Unable to create. A participant with login " + participant.getLogin() + " already exist.",
 					HttpStatus.CONFLICT);
 		}
+		String hashedPassword = passwordEncoder.encode(participant.getPassword());
+		participant.setPassword(hashedPassword);
 		participantService.add(participant);
 		return new ResponseEntity<Participant>(participant, HttpStatus.CREATED);
 	}
